@@ -1,0 +1,8 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    unawaited_futures: true
+    use_colored_box: true
+    use_decorated_box: true
