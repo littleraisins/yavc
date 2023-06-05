@@ -1,6 +1,6 @@
 name: yavc
 description: Yet Another Version Checker
-version: 0.0.0
+version: 1.0.1
 publish_to: none
 
 environment:

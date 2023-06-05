@@ -143,11 +143,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: Container(
             padding: const EdgeInsets.all(20.0),
             child: Column(children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: AbsorbPointer(
-                      absorbing: loading,
+              AbsorbPointer(
+                absorbing: loading,
+                child: Row(
+                  children: [
+                    Expanded(
                       child: TextField(
                         decoration: InputDecoration(
                             border: const OutlineInputBorder(
@@ -172,16 +172,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                         },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    child: IconButton.filledTonal(
-                      onPressed:
-                          mainController.text.isEmpty ? null : _addThread,
-                      icon: const Icon(Icons.add),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      child: IconButton.filledTonal(
+                        onPressed:
+                            mainController.text.isEmpty ? null : _addThread,
+                        icon: loading
+                            ? const SizedBox(
+                                width: 15,
+                                height: 15,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 3))
+                            : const Icon(Icons.add),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               Expanded(
