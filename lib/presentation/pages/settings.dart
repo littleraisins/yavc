@@ -304,17 +304,27 @@ importDatabase(BuildContext context, WidgetRef ref) async {
 }
 
 exportDatabase(BuildContext context) async {
-  if (await Permission.storage.request().isGranted) {
-    String? destDir = await FilePicker.platform.getDirectoryPath();
-    if (destDir != null) {
-      final appDir = await getApplicationSupportDirectory();
-      final dbFile = File(path.join(appDir.path, 'yavc.db'));
-      await dbFile.copy(path.join(destDir, 'yavc.db')).then((_) {
-        alert(context,
-            title: 'Export',
-            content:
-                'Database export finished\nLocation: "${path.join(destDir, 'yavc.db')}"');
-      });
-    }
+  if (Platform.isAndroid) {
+    await Permission.storage.request().then((status) {
+      if (status.isDenied) {
+        alert(
+          context,
+          title: 'Error',
+          content: 'To perform this action please allow file access',
+        );
+        return;
+      }
+    });
+  }
+  String? destDir = await FilePicker.platform.getDirectoryPath();
+  if (destDir != null) {
+    final appDir = await getApplicationSupportDirectory();
+    final dbFile = File(path.join(appDir.path, 'yavc.db'));
+    await dbFile.copy(path.join(destDir, 'yavc.db')).then((_) {
+      alert(context,
+          title: 'Export',
+          content:
+              'Database export finished\nLocation: "${path.join(destDir, 'yavc.db')}"');
+    });
   }
 }
