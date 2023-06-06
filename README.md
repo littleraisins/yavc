@@ -9,12 +9,18 @@
 
 ## Installation
 
-- Windows & Linux: Extract archive and run `YAVC.exe`/`YAVC`.
+- Windows: Extract archive and run `YAVC.exe`.
+- Linux: Extract archive and run `YAVC`.
 - Android: Download and install APK file. *
 - MacOS: Extract archive and move `YAVC.app` to `Applications`. **
-
-
 
 \* APK file is not signed, so recent version of Android might warn you about unknown developer, there is usually a way to force install application anyway, just look for it in the warning box.
 
 \** MacOS app is not signed , on first launch you will need to manually allow it by going to `System settings > Privacy & Security` and clicking `Open` button. 
+
+## Data storage
+
+- Windows: `%APPDATA$/littleraisins/yavc/yavc.db`
+- Linux: `/home/<username>/.local/share/YAVC/yavc.db`
+- Android: `/data/user/0/com.littleraisins.yavc/files/yavc.db`
+- MacOS: `/Users/<username>/Library/Containers/com.littleraisins.yavc/Data/Library/Application Support/com.littleraisins.yavc/yavc.db`
