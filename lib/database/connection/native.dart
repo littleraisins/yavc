@@ -11,8 +11,12 @@ Future<File> get databaseFile async {
   final appDir = await getApplicationSupportDirectory();
   final dbPath = path.join(appDir.path, 'yavc.db');
   final newDbPath = File(path.join(appDir.path, 'yavc.db.new'));
+  final resetFile = File(path.join(appDir.path, 'reset'));
   if (await newDbPath.exists()) {
     await newDbPath.copy(dbPath).then((_) => newDbPath.delete());
+  } else if (await resetFile.exists()) {
+    await resetFile.delete();
+    await File(dbPath).delete();
   }
   return File(dbPath);
 }

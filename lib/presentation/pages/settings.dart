@@ -4,7 +4,6 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -277,10 +276,6 @@ exportThreads(BuildContext context, WidgetRef ref) async {
 }
 
 importDatabase(BuildContext context, WidgetRef ref) async {
-  await alert(context,
-      title: 'Warning',
-      content:
-          'Please make sure to provide correct database file, because there is no data validation.\nYour current database will be backed up, and could be restored later.');
   FilePickerResult? result = await FilePicker.platform.pickFiles();
   if (result != null) {
     String? newDbPath = result.files.single.path;
@@ -288,8 +283,8 @@ importDatabase(BuildContext context, WidgetRef ref) async {
       final appDir = await getApplicationSupportDirectory();
       // backup old file
       final dbFile = File(path.join(appDir.path, 'yavc.db'));
-      String timestamp = DateFormat('y-MM-dd_HH-mm-ss').format(DateTime.now());
-      await dbFile.copy(path.join(appDir.path, 'yavc.db.$timestamp.bak'));
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      await dbFile.copy(path.join(appDir.path, '$timestamp.bak'));
       // copy new file
       final newDbFile = File(newDbPath);
       await newDbFile.copy(path.join(appDir.path, 'yavc.db.new')).then((_) {

@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide Column;
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:yavc/presentation/actions.dart';
 
 import '../../cards/card.dart';
 import '../../data_extraction/parsing.dart';
@@ -113,6 +118,38 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(loadingProvider.notifier).state = false;
   }
 
+  void _tryToRestoreBackup() async {
+    await _restore().then((_) {
+      alert(context,
+          title: 'Restore',
+          content:
+              'Backup restore finished\nPlease RESTART THE APP to see results');
+    });
+  }
+
+  Future<void> _restore() async {
+    final appDir = await getApplicationSupportDirectory();
+    List<FileSystemEntity> files = await appDir.list().toList();
+    List<String> backupFiles = [];
+    for (var file in files) {
+      var filename = file.uri.pathSegments.last;
+      if (filename.endsWith('.bak')) backupFiles.add(filename);
+    }
+    if (backupFiles.isEmpty) {
+      final resetFile = File(path.join(appDir.path, 'reset'));
+      await resetFile.create();
+      return;
+    }
+    List<int> timestamps = backupFiles
+        .map((f) => int.parse(f.toString().split('.').first))
+        .toList();
+    timestamps.sort();
+    final dbBakFile = File(path.join(appDir.path, '${timestamps.last}.bak'));
+    await dbBakFile
+        .copy(path.join(appDir.path, 'yavc.db.new'))
+        .then((_) => dbBakFile.delete());
+  }
+
   @override
   Widget build(BuildContext context) {
     final threads = ref.watch(allThreadsStreamProvider);
@@ -215,7 +252,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                     },
                     error: (e, s) {
                       debugPrintStack(label: e.toString(), stackTrace: s);
-                      return const Text('An error has occured');
+                      return Column(
+                        children: [
+                          const Text('An error has occured.'),
+                          const Text('Your database might be corrupted.'),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                              onPressed: _tryToRestoreBackup,
+                              child: const Text(
+                                  'Try to restore from latest backup')),
+                        ],
+                      );
                     },
                     loading: () => const Align(
                           alignment: Alignment.center,
