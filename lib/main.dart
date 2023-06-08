@@ -1,30 +1,27 @@
 import 'dart:io';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lehttp_overrides/lehttp_overrides.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'presentation/root.dart';
 
 void main() async {
   // Adding new Let's Encrypt root certificate for old Android devices <7.1.1
-  // See: https://pub.dev/packages/lehttp_overrides
   if (Platform.isAndroid) {
     HttpOverrides.global = LEHttpOverrides();
   }
-  // Desktop window setup
+
+  runApp(const ProviderScope(child: MyApp()));
+
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    WidgetsFlutterBinding.ensureInitialized();
-    await windowManager.ensureInitialized();
-    WindowOptions windowOptions = const WindowOptions(center: true);
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
+    doWhenWindowReady(() {
+      appWindow.alignment = Alignment.center;
+      appWindow.maximize();
+      appWindow.show();
     });
   }
-  // Run
-  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
