@@ -28,7 +28,7 @@ class ListConverter extends TypeConverter<List<String>, String> {
 
   @override
   List<String> fromSql(String fromDb) {
-    return fromDb.split(',');
+    return fromDb.isNotEmpty ? fromDb.split(',') : [];
   }
 
   @override
