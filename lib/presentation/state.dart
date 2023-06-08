@@ -6,10 +6,16 @@ final loadingProvider = StateProvider<bool>((ref) => false);
 
 final importProgressProvider = StateProvider<double>((ref) => 0.0);
 
-final searchQuery = StateProvider<String>((ref) => '');
-
+final searchQueryThreads = StateProvider<String>((ref) => '');
 final allThreadsStreamProvider = StreamProvider<List<Thread>>((ref) {
   final database = ref.watch(AppDatabase.provider);
-  final s = ref.watch(searchQuery);
-  return database.allThreads(s);
+  final s = ref.watch(searchQueryThreads);
+  return database.activeThreads(s);
+});
+
+final searchQueryArchive = StateProvider<String>((ref) => '');
+final archivedThreadsStreamProvider = StreamProvider<List<Thread>>((ref) {
+  final database = ref.watch(AppDatabase.provider);
+  final s = ref.watch(searchQueryArchive);
+  return database.archivedThreads(s);
 });

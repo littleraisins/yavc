@@ -343,6 +343,19 @@ class ActionButtons extends ConsumerWidget {
     );
   }
 
+  void _toggleArchive(BuildContext context, WidgetRef ref) async {
+    var text = thread.archived
+        ? 'This thread will be removed from archive'
+        : 'This thread will be moved to archive';
+    if (await confirm(context, content: text)) {
+      final database = ref.read(AppDatabase.provider);
+      await database.updateThreads(
+          [thread.copyWith(archived: !thread.archived)]).then((_) {
+        Navigator.of(context).pop();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -372,6 +385,19 @@ class ActionButtons extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
+              onPressed: () => _toggleArchive(context, ref),
+              icon: thread.archived
+                  ? const Icon(Icons.unarchive)
+                  : const Icon(Icons.archive),
+              label: thread.archived
+                  ? const Text('Activate')
+                  : const Text('Archive'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
               onPressed: () => _deleteThread(context, ref),
               icon: const Icon(Icons.delete),
               label: const Text('Delete'),
@@ -395,6 +421,15 @@ class ActionButtons extends ConsumerWidget {
                 onPressed: _openThread,
                 icon: const Icon(Icons.launch),
                 label: const Text('Thread'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _toggleArchive(context, ref),
+                icon: thread.archived
+                    ? const Icon(Icons.unarchive)
+                    : const Icon(Icons.archive),
+                label: thread.archived
+                    ? const Text('Activate')
+                    : const Text('Archive'),
               ),
               ElevatedButton.icon(
                 onPressed: () => _deleteThread(context, ref),

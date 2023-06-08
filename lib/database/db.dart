@@ -18,6 +18,7 @@ class Threads extends Table {
       text().map(const ListConverter()).withDefault(const Constant(''))();
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get lastUpdated => text().withDefault(const Constant(''))();
+  BoolColumn get archived => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -56,6 +57,7 @@ class AppDatabase extends _$AppDatabase {
                 await m.addColumn(threads, threads.tags);
                 await m.addColumn(threads, threads.description);
                 await m.addColumn(threads, threads.lastUpdated);
+                await m.addColumn(threads, threads.archived);
               });
               break;
           }
@@ -68,13 +70,20 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Stream<List<Thread>> allThreads(String s) {
+  Stream<List<Thread>> activeThreads(String s) {
     return (select(threads)
-          ..where((t) => t.name.contains(s))
+          ..where((t) => t.name.contains(s) & t.archived.not())
           ..orderBy([
             (t) =>
                 OrderingTerm(expression: t.currVersion.equalsExp(t.prevVersion))
           ]))
+        .watch();
+  }
+
+  Stream<List<Thread>> archivedThreads(String s) {
+    return (select(threads)
+          ..where((t) => t.name.contains(s) & t.archived.equals(true))
+          ..orderBy([(t) => OrderingTerm(expression: t.name)]))
         .watch();
   }
 

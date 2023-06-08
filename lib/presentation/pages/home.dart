@@ -27,7 +27,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    mainController.text = ref.read(searchQuery);
+    mainController.text = ref.read(searchQueryThreads);
   }
 
   @override
@@ -84,7 +84,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     ref.read(loadingProvider.notifier).state = false;
-    ref.read(searchQuery.notifier).state = '';
+    ref.read(searchQueryThreads.notifier).state = '';
     mainController.clear();
   }
 
@@ -203,13 +203,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     splashRadius: 15,
                                     onPressed: () {
                                       mainController.clear();
-                                      ref.read(searchQuery.notifier).state = '';
+                                      ref
+                                          .read(searchQueryThreads.notifier)
+                                          .state = '';
                                     },
                                     icon: const Icon(Icons.clear))),
                         controller: mainController,
                         onSubmitted: (_) => _addThread(),
                         onChanged: (text) {
-                          ref.read(searchQuery.notifier).state = text;
+                          ref.read(searchQueryThreads.notifier).state = text;
                         },
                       ),
                     ),

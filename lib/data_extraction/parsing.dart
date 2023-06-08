@@ -216,6 +216,8 @@ Future<UpdateResult> refresh(WidgetRef ref) async {
 
   List<String> failed = [];
 
+  threads.retainWhere((t) => !t.archived);
+
   List<String> ids = threads.map((t) => t.id.toString()).toList();
 
   Response versionResponse =

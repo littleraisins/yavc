@@ -71,6 +71,19 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant(''));
+  static const VerificationMeta _archivedMeta =
+      const VerificationMeta('archived');
+  @override
+  late final GeneratedColumn<bool> archived =
+      GeneratedColumn<bool>('archived', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("archived" IN (0, 1))',
+            SqlDialect.mysql: '',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -82,7 +95,8 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
         banner,
         tags,
         description,
-        lastUpdated
+        lastUpdated,
+        archived
       ];
   @override
   String get aliasedName => _alias ?? 'threads';
@@ -144,6 +158,10 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
           lastUpdated.isAcceptableOrUnknown(
               data['last_updated']!, _lastUpdatedMeta));
     }
+    if (data.containsKey('archived')) {
+      context.handle(_archivedMeta,
+          archived.isAcceptableOrUnknown(data['archived']!, _archivedMeta));
+    }
     return context;
   }
 
@@ -174,6 +192,8 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
           .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
       lastUpdated: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}last_updated'])!,
+      archived: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}archived'])!,
     );
   }
 
@@ -199,6 +219,7 @@ class Thread extends DataClass implements Insertable<Thread> {
   final List<String> tags;
   final String description;
   final String lastUpdated;
+  final bool archived;
   const Thread(
       {required this.id,
       required this.name,
@@ -209,7 +230,8 @@ class Thread extends DataClass implements Insertable<Thread> {
       required this.banner,
       required this.tags,
       required this.description,
-      required this.lastUpdated});
+      required this.lastUpdated,
+      required this.archived});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -229,6 +251,7 @@ class Thread extends DataClass implements Insertable<Thread> {
     }
     map['description'] = Variable<String>(description);
     map['last_updated'] = Variable<String>(lastUpdated);
+    map['archived'] = Variable<bool>(archived);
     return map;
   }
 
@@ -244,6 +267,7 @@ class Thread extends DataClass implements Insertable<Thread> {
       tags: Value(tags),
       description: Value(description),
       lastUpdated: Value(lastUpdated),
+      archived: Value(archived),
     );
   }
 
@@ -261,6 +285,7 @@ class Thread extends DataClass implements Insertable<Thread> {
       tags: serializer.fromJson<List<String>>(json['tags']),
       description: serializer.fromJson<String>(json['description']),
       lastUpdated: serializer.fromJson<String>(json['lastUpdated']),
+      archived: serializer.fromJson<bool>(json['archived']),
     );
   }
   @override
@@ -277,6 +302,7 @@ class Thread extends DataClass implements Insertable<Thread> {
       'tags': serializer.toJson<List<String>>(tags),
       'description': serializer.toJson<String>(description),
       'lastUpdated': serializer.toJson<String>(lastUpdated),
+      'archived': serializer.toJson<bool>(archived),
     };
   }
 
@@ -290,7 +316,8 @@ class Thread extends DataClass implements Insertable<Thread> {
           Uint8List? banner,
           List<String>? tags,
           String? description,
-          String? lastUpdated}) =>
+          String? lastUpdated,
+          bool? archived}) =>
       Thread(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -302,6 +329,7 @@ class Thread extends DataClass implements Insertable<Thread> {
         tags: tags ?? this.tags,
         description: description ?? this.description,
         lastUpdated: lastUpdated ?? this.lastUpdated,
+        archived: archived ?? this.archived,
       );
   @override
   String toString() {
@@ -315,7 +343,8 @@ class Thread extends DataClass implements Insertable<Thread> {
           ..write('banner: $banner, ')
           ..write('tags: $tags, ')
           ..write('description: $description, ')
-          ..write('lastUpdated: $lastUpdated')
+          ..write('lastUpdated: $lastUpdated, ')
+          ..write('archived: $archived')
           ..write(')'))
         .toString();
   }
@@ -331,7 +360,8 @@ class Thread extends DataClass implements Insertable<Thread> {
       $driftBlobEquality.hash(banner),
       tags,
       description,
-      lastUpdated);
+      lastUpdated,
+      archived);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -345,7 +375,8 @@ class Thread extends DataClass implements Insertable<Thread> {
           $driftBlobEquality.equals(other.banner, this.banner) &&
           other.tags == this.tags &&
           other.description == this.description &&
-          other.lastUpdated == this.lastUpdated);
+          other.lastUpdated == this.lastUpdated &&
+          other.archived == this.archived);
 }
 
 class ThreadsCompanion extends UpdateCompanion<Thread> {
@@ -359,6 +390,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
   final Value<List<String>> tags;
   final Value<String> description;
   final Value<String> lastUpdated;
+  final Value<bool> archived;
   const ThreadsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -370,6 +402,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     this.tags = const Value.absent(),
     this.description = const Value.absent(),
     this.lastUpdated = const Value.absent(),
+    this.archived = const Value.absent(),
   });
   ThreadsCompanion.insert({
     this.id = const Value.absent(),
@@ -382,6 +415,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     this.tags = const Value.absent(),
     this.description = const Value.absent(),
     this.lastUpdated = const Value.absent(),
+    this.archived = const Value.absent(),
   })  : name = Value(name),
         labels = Value(labels),
         developer = Value(developer),
@@ -399,6 +433,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     Expression<String>? tags,
     Expression<String>? description,
     Expression<String>? lastUpdated,
+    Expression<bool>? archived,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -411,6 +446,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       if (tags != null) 'tags': tags,
       if (description != null) 'description': description,
       if (lastUpdated != null) 'last_updated': lastUpdated,
+      if (archived != null) 'archived': archived,
     });
   }
 
@@ -424,7 +460,8 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       Value<Uint8List>? banner,
       Value<List<String>>? tags,
       Value<String>? description,
-      Value<String>? lastUpdated}) {
+      Value<String>? lastUpdated,
+      Value<bool>? archived}) {
     return ThreadsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -436,6 +473,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       tags: tags ?? this.tags,
       description: description ?? this.description,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      archived: archived ?? this.archived,
     );
   }
 
@@ -474,6 +512,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     if (lastUpdated.present) {
       map['last_updated'] = Variable<String>(lastUpdated.value);
     }
+    if (archived.present) {
+      map['archived'] = Variable<bool>(archived.value);
+    }
     return map;
   }
 
@@ -489,7 +530,8 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
           ..write('banner: $banner, ')
           ..write('tags: $tags, ')
           ..write('description: $description, ')
-          ..write('lastUpdated: $lastUpdated')
+          ..write('lastUpdated: $lastUpdated, ')
+          ..write('archived: $archived')
           ..write(')'))
         .toString();
   }

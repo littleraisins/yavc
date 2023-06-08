@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yavc/presentation/state.dart';
 
+import 'pages/archive.dart';
 import 'pages/home.dart';
 import 'pages/settings.dart';
 
@@ -25,6 +26,9 @@ class _RootNavigatorState extends ConsumerState<RootNavigator> {
         page = const HomePage();
         break;
       case 1:
+        page = const ArchivePage();
+        break;
+      case 2:
         page = const SettingsPage();
         break;
       default:
@@ -49,8 +53,12 @@ class _RootNavigatorState extends ConsumerState<RootNavigator> {
                 elevation: 5,
                 destinations: const [
                   NavigationDestination(
-                    icon: Icon(Icons.home),
-                    label: 'Home',
+                    icon: Icon(Icons.collections_bookmark),
+                    label: 'Collection',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.inventory),
+                    label: 'Archive',
                   ),
                   NavigationDestination(
                     icon: Icon(Icons.settings),
@@ -72,11 +80,14 @@ class _RootNavigatorState extends ConsumerState<RootNavigator> {
           return Row(
             children: [
               NavigationRail(
-                labelType: NavigationRailLabelType.selected,
                 destinations: const [
                   NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
+                    icon: Icon(Icons.collections_bookmark),
+                    label: Text('Collection'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.inventory),
+                    label: Text('Archive'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.settings),
