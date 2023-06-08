@@ -7,14 +7,7 @@ import 'package:html/parser.dart';
 import 'package:http/http.dart';
 
 import '../database/db.dart';
-
-const String fastCheckEndpoint = 'https://f95zone.to/sam/checker.php?threads=';
-
-final List<String> supportedForums = [
-  'Games',
-  'Comics & Stills',
-  'Animations & Loops'
-];
+import 'constants.dart';
 
 class ParsingResult {
   String name;
@@ -22,8 +15,34 @@ class ParsingResult {
   String developer;
   String version;
   Uint8List banner;
+  List<String> tags;
+  String description;
+  String lastUpdated;
   ParsingResult(
-      this.name, this.labels, this.developer, this.version, this.banner);
+    this.name,
+    this.labels,
+    this.developer,
+    this.version,
+    this.banner,
+    this.tags,
+    this.description,
+    this.lastUpdated,
+  );
+}
+
+String? getThreadAttr(List<String> names, String plain) {
+  for (var name in names) {
+    var regex = RegExp(
+      r'^ *' + name + r' *(?: *\n? *:|: *\n? *) *(.*)',
+      multiLine: true,
+      caseSensitive: false,
+    );
+    var matches = regex.allMatches(plain);
+    if (matches.isNotEmpty) {
+      return matches.first.group(1);
+    }
+  }
+  return null;
 }
 
 Future<ParsingResult> parseThread(int threadId) async {
@@ -37,13 +56,15 @@ Future<ParsingResult> parseThread(int threadId) async {
     throw ('Thread not found!');
   }
   if (status == 403) {
-    throw ("Thread is unsupported.\nYou can only add threads from: ${supportedForums.join(', ')}");
+    throw ("Thread is not supported.\nYou can only add threads from: ${supportedForums.join(', ')}");
   }
   if (status != 200) {
     throw ('Failed to retrieve data (status code: $status)');
   }
 
   Document document = parse(response.body);
+  String plain = response.body
+      .replaceAll(RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true), '');
 
   // Checking if forum is supported
 
@@ -122,6 +143,39 @@ Future<ParsingResult> parseThread(int threadId) async {
 
   String title = titleSlug.replaceAll(regexp, '').trim();
 
+  // Parsing tags
+
+  List<String> tags = document
+      .getElementsByTagName('a')
+      .where((el) => el.className == 'tagItem')
+      .map((el) => el.text)
+      .toList();
+
+  // Parsing post info
+
+  String description = '';
+  String lastUpdated = '';
+
+  List<Element> postWrappers = threadStarter[0]
+      .getElementsByTagName('div')
+      .where((el) => el.className == 'bbWrapper')
+      .toList();
+
+  if (postWrappers.isNotEmpty) {
+    Element wrapper = postWrappers[0];
+
+    List<Element> wrapperDivs = wrapper.getElementsByTagName('div');
+    if (wrapperDivs.isNotEmpty) {
+      description =
+          wrapperDivs[0].text.trim().replaceAll(RegExp('Overview:*\n*'), '');
+    }
+
+    var lastUpdatedAttrResult = getThreadAttr(lastUpdatedAttrNames, plain);
+    if (lastUpdatedAttrResult != null) {
+      lastUpdated = lastUpdatedAttrResult;
+    }
+  }
+
   // Downloading banner
 
   List<Element> bannerEl = threadStarter[0].getElementsByClassName('bbImage');
@@ -142,7 +196,8 @@ Future<ParsingResult> parseThread(int threadId) async {
     banner = bannerResponse.bodyBytes;
   }
 
-  return ParsingResult(title, labels, developer, version, banner);
+  return ParsingResult(title, labels, developer, version, banner, tags,
+      description, lastUpdated);
 }
 
 class UpdateResult {

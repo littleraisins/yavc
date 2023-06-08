@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:yavc/presentation/actions.dart';
 
 import '../../cards/card.dart';
 import '../../data_extraction/parsing.dart';
 import '../../data_extraction/text_manipulation.dart';
 import '../../database/db.dart';
+import '../actions.dart';
 import '../state.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -72,6 +72,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             prevVersion: result.version,
             currVersion: result.version,
             banner: result.banner,
+            tags: Value(result.tags),
+            description: Value(result.description),
+            lastUpdated: Value(result.lastUpdated),
           ));
         } catch (e) {
           _showErrorInSnack(e.toString());

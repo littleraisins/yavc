@@ -47,9 +47,43 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
   late final GeneratedColumn<Uint8List> banner = GeneratedColumn<Uint8List>(
       'banner', aliasedName, false,
       type: DriftSqlType.blob, requiredDuringInsert: true);
+  static const VerificationMeta _tagsMeta = const VerificationMeta('tags');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, labels, developer, prevVersion, currVersion, banner];
+  late final GeneratedColumnWithTypeConverter<List<String>, String> tags =
+      GeneratedColumn<String>('tags', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: const Constant(''))
+          .withConverter<List<String>>($ThreadsTable.$convertertags);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  static const VerificationMeta _lastUpdatedMeta =
+      const VerificationMeta('lastUpdated');
+  @override
+  late final GeneratedColumn<String> lastUpdated = GeneratedColumn<String>(
+      'last_updated', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(''));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        labels,
+        developer,
+        prevVersion,
+        currVersion,
+        banner,
+        tags,
+        description,
+        lastUpdated
+      ];
   @override
   String get aliasedName => _alias ?? 'threads';
   @override
@@ -97,6 +131,19 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
     } else if (isInserting) {
       context.missing(_bannerMeta);
     }
+    context.handle(_tagsMeta, const VerificationResult.success());
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+          _lastUpdatedMeta,
+          lastUpdated.isAcceptableOrUnknown(
+              data['last_updated']!, _lastUpdatedMeta));
+    }
     return context;
   }
 
@@ -121,6 +168,12 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
           .read(DriftSqlType.string, data['${effectivePrefix}curr_version'])!,
       banner: attachedDatabase.typeMapping
           .read(DriftSqlType.blob, data['${effectivePrefix}banner'])!,
+      tags: $ThreadsTable.$convertertags.fromSql(attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}tags'])!),
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
+      lastUpdated: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_updated'])!,
     );
   }
 
@@ -130,6 +183,8 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
   }
 
   static TypeConverter<List<String>, String> $converterlabels =
+      const ListConverter();
+  static TypeConverter<List<String>, String> $convertertags =
       const ListConverter();
 }
 
@@ -141,6 +196,9 @@ class Thread extends DataClass implements Insertable<Thread> {
   final String prevVersion;
   final String currVersion;
   final Uint8List banner;
+  final List<String> tags;
+  final String description;
+  final String lastUpdated;
   const Thread(
       {required this.id,
       required this.name,
@@ -148,7 +206,10 @@ class Thread extends DataClass implements Insertable<Thread> {
       required this.developer,
       required this.prevVersion,
       required this.currVersion,
-      required this.banner});
+      required this.banner,
+      required this.tags,
+      required this.description,
+      required this.lastUpdated});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -162,6 +223,12 @@ class Thread extends DataClass implements Insertable<Thread> {
     map['prev_version'] = Variable<String>(prevVersion);
     map['curr_version'] = Variable<String>(currVersion);
     map['banner'] = Variable<Uint8List>(banner);
+    {
+      final converter = $ThreadsTable.$convertertags;
+      map['tags'] = Variable<String>(converter.toSql(tags));
+    }
+    map['description'] = Variable<String>(description);
+    map['last_updated'] = Variable<String>(lastUpdated);
     return map;
   }
 
@@ -174,6 +241,9 @@ class Thread extends DataClass implements Insertable<Thread> {
       prevVersion: Value(prevVersion),
       currVersion: Value(currVersion),
       banner: Value(banner),
+      tags: Value(tags),
+      description: Value(description),
+      lastUpdated: Value(lastUpdated),
     );
   }
 
@@ -188,6 +258,9 @@ class Thread extends DataClass implements Insertable<Thread> {
       prevVersion: serializer.fromJson<String>(json['prevVersion']),
       currVersion: serializer.fromJson<String>(json['currVersion']),
       banner: serializer.fromJson<Uint8List>(json['banner']),
+      tags: serializer.fromJson<List<String>>(json['tags']),
+      description: serializer.fromJson<String>(json['description']),
+      lastUpdated: serializer.fromJson<String>(json['lastUpdated']),
     );
   }
   @override
@@ -201,6 +274,9 @@ class Thread extends DataClass implements Insertable<Thread> {
       'prevVersion': serializer.toJson<String>(prevVersion),
       'currVersion': serializer.toJson<String>(currVersion),
       'banner': serializer.toJson<Uint8List>(banner),
+      'tags': serializer.toJson<List<String>>(tags),
+      'description': serializer.toJson<String>(description),
+      'lastUpdated': serializer.toJson<String>(lastUpdated),
     };
   }
 
@@ -211,7 +287,10 @@ class Thread extends DataClass implements Insertable<Thread> {
           String? developer,
           String? prevVersion,
           String? currVersion,
-          Uint8List? banner}) =>
+          Uint8List? banner,
+          List<String>? tags,
+          String? description,
+          String? lastUpdated}) =>
       Thread(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -220,6 +299,9 @@ class Thread extends DataClass implements Insertable<Thread> {
         prevVersion: prevVersion ?? this.prevVersion,
         currVersion: currVersion ?? this.currVersion,
         banner: banner ?? this.banner,
+        tags: tags ?? this.tags,
+        description: description ?? this.description,
+        lastUpdated: lastUpdated ?? this.lastUpdated,
       );
   @override
   String toString() {
@@ -230,14 +312,26 @@ class Thread extends DataClass implements Insertable<Thread> {
           ..write('developer: $developer, ')
           ..write('prevVersion: $prevVersion, ')
           ..write('currVersion: $currVersion, ')
-          ..write('banner: $banner')
+          ..write('banner: $banner, ')
+          ..write('tags: $tags, ')
+          ..write('description: $description, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, labels, developer, prevVersion,
-      currVersion, $driftBlobEquality.hash(banner));
+  int get hashCode => Object.hash(
+      id,
+      name,
+      labels,
+      developer,
+      prevVersion,
+      currVersion,
+      $driftBlobEquality.hash(banner),
+      tags,
+      description,
+      lastUpdated);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -248,7 +342,10 @@ class Thread extends DataClass implements Insertable<Thread> {
           other.developer == this.developer &&
           other.prevVersion == this.prevVersion &&
           other.currVersion == this.currVersion &&
-          $driftBlobEquality.equals(other.banner, this.banner));
+          $driftBlobEquality.equals(other.banner, this.banner) &&
+          other.tags == this.tags &&
+          other.description == this.description &&
+          other.lastUpdated == this.lastUpdated);
 }
 
 class ThreadsCompanion extends UpdateCompanion<Thread> {
@@ -259,6 +356,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
   final Value<String> prevVersion;
   final Value<String> currVersion;
   final Value<Uint8List> banner;
+  final Value<List<String>> tags;
+  final Value<String> description;
+  final Value<String> lastUpdated;
   const ThreadsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -267,6 +367,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     this.prevVersion = const Value.absent(),
     this.currVersion = const Value.absent(),
     this.banner = const Value.absent(),
+    this.tags = const Value.absent(),
+    this.description = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   });
   ThreadsCompanion.insert({
     this.id = const Value.absent(),
@@ -276,6 +379,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     required String prevVersion,
     required String currVersion,
     required Uint8List banner,
+    this.tags = const Value.absent(),
+    this.description = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
   })  : name = Value(name),
         labels = Value(labels),
         developer = Value(developer),
@@ -290,6 +396,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     Expression<String>? prevVersion,
     Expression<String>? currVersion,
     Expression<Uint8List>? banner,
+    Expression<String>? tags,
+    Expression<String>? description,
+    Expression<String>? lastUpdated,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -299,6 +408,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       if (prevVersion != null) 'prev_version': prevVersion,
       if (currVersion != null) 'curr_version': currVersion,
       if (banner != null) 'banner': banner,
+      if (tags != null) 'tags': tags,
+      if (description != null) 'description': description,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
     });
   }
 
@@ -309,7 +421,10 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       Value<String>? developer,
       Value<String>? prevVersion,
       Value<String>? currVersion,
-      Value<Uint8List>? banner}) {
+      Value<Uint8List>? banner,
+      Value<List<String>>? tags,
+      Value<String>? description,
+      Value<String>? lastUpdated}) {
     return ThreadsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -318,6 +433,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       prevVersion: prevVersion ?? this.prevVersion,
       currVersion: currVersion ?? this.currVersion,
       banner: banner ?? this.banner,
+      tags: tags ?? this.tags,
+      description: description ?? this.description,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -346,6 +464,16 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     if (banner.present) {
       map['banner'] = Variable<Uint8List>(banner.value);
     }
+    if (tags.present) {
+      final converter = $ThreadsTable.$convertertags;
+      map['tags'] = Variable<String>(converter.toSql(tags.value));
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<String>(lastUpdated.value);
+    }
     return map;
   }
 
@@ -358,7 +486,10 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
           ..write('developer: $developer, ')
           ..write('prevVersion: $prevVersion, ')
           ..write('currVersion: $currVersion, ')
-          ..write('banner: $banner')
+          ..write('banner: $banner, ')
+          ..write('tags: $tags, ')
+          ..write('description: $description, ')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }

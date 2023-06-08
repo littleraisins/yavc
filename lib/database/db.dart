@@ -14,6 +14,10 @@ class Threads extends Table {
   TextColumn get prevVersion => text()();
   TextColumn get currVersion => text()();
   BlobColumn get banner => blob()();
+  TextColumn get tags =>
+      text().map(const ListConverter()).withDefault(const Constant(''))();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  TextColumn get lastUpdated => text().withDefault(const Constant(''))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -38,15 +42,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(impl.connect());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: ((m, from, to) async {
+        await customStatement('PRAGMA foreign_keys = OFF');
         for (var step = from + 1; step <= to; step++) {
           switch (step) {
-            // future migrations will be here
+            case 2:
+              await transaction(() async {
+                await m.addColumn(threads, threads.tags);
+                await m.addColumn(threads, threads.description);
+                await m.addColumn(threads, threads.lastUpdated);
+              });
+              break;
           }
         }
       }),
