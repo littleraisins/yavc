@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' hide Column;
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as path;
@@ -63,7 +64,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         _showErrorInSnack('Thread already added');
       } else {
         try {
-          ParsingResult result = await parseThread(id);
+          ParsingResult result = await compute(parseThread, id);
           await database.threads.insertOne(ThreadsCompanion.insert(
             id: Value(id),
             name: result.name,

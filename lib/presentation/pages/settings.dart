@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' hide Column;
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as path;
@@ -207,7 +208,10 @@ class ImportResult {
 }
 
 Future<ImportResult> _import(
-    BuildContext context, WidgetRef ref, List<String> links) async {
+  BuildContext context,
+  WidgetRef ref,
+  List<String> links,
+) async {
   ref.read(loadingProvider.notifier).state = true;
   final database = ref.read(AppDatabase.provider);
   List<int> ids = [];
@@ -229,7 +233,7 @@ Future<ImportResult> _import(
         exists.add('https://f95zone.to/threads/$id');
         continue;
       }
-      var result = await parseThread(id);
+      var result = await compute(parseThread, id);
       await database.threads.insertOne(ThreadsCompanion.insert(
         id: Value(id),
         name: result.name,
