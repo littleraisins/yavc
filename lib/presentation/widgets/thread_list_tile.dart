@@ -45,21 +45,20 @@ class ThreadListTile extends StatelessWidget {
                     ],
                   );
                 } else {
-                  return Flexible(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            thread.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 20,
-                            ),
+                  return Flex(
+                    direction: Axis.horizontal,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          thread.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 20,
                           ),
                         ),
-                        Version(thread: thread),
-                      ],
-                    ),
+                      ),
+                      Version(thread: thread),
+                    ],
                   );
                 }
               },
