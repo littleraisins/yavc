@@ -79,6 +79,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             tags: Value(result.tags),
             description: Value(result.description),
             lastUpdated: Value(result.lastUpdated),
+            lastFullRefresh: Value(DateTime.now().millisecondsSinceEpoch),
           ));
         } catch (e) {
           _showErrorInSnack(e.toString());

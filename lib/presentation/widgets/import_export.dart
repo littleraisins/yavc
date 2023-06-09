@@ -216,6 +216,7 @@ Future<ImportResult> _import(
         tags: Value(result.tags),
         description: Value(result.description),
         lastUpdated: Value(result.lastUpdated),
+        lastFullRefresh: Value(DateTime.now().millisecondsSinceEpoch),
       ));
       counter += 1.0;
       ref.read(importProgressProvider.notifier).state = counter / ids.length;
