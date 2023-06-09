@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:lehttp_overrides/lehttp_overrides.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 import 'presentation/root.dart';
 
@@ -12,6 +15,10 @@ void main() async {
   if (Platform.isAndroid) {
     HttpOverrides.global = LEHttpOverrides();
   }
+
+  final appDir = await getApplicationSupportDirectory();
+  final hivePath = path.join(appDir.path, 'hive').toString();
+  await Hive.openBox('settings', path: hivePath);
 
   runApp(const ProviderScope(child: MyApp()));
 
