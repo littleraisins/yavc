@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-import '../database/db.dart';
-import 'card_expanded.dart';
-import 'prefix_colors.dart';
+import '../../database/db.dart';
+import '../label_colors.dart';
+import 'thread_card_expanded.dart';
 
 class ThreadCard extends StatelessWidget {
   const ThreadCard({super.key, required this.thread});

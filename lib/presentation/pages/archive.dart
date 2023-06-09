@@ -2,8 +2,8 @@ import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../cards/card.dart';
 import '../state.dart';
+import '../widgets/thread_card.dart';
 
 class ArchivePage extends ConsumerStatefulWidget {
   const ArchivePage({Key? key}) : super(key: key);

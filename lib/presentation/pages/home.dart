@@ -5,15 +5,17 @@ import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import '../../cards/card.dart';
 import '../../data_extraction/parsing.dart';
 import '../../data_extraction/text_manipulation.dart';
 import '../../database/db.dart';
 import '../actions.dart';
 import '../state.dart';
+import '../widgets/mixed_loading_indicator.dart';
+import '../widgets/thread_card.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -231,66 +233,65 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: threads.when(
-                    data: (threads) {
-                      if (threads.isEmpty) {
-                        if (mainController.text.isNotEmpty) {
-                          return const Text('No matching threads...');
-                        }
-                        return const Center(child: Text('Database empty'));
-                      } else {
-                        return DynamicHeightGridView(
-                          itemCount: threads.length,
-                          crossAxisCount: gridColumnCount,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                          builder: (context, index) {
-                            return AbsorbPointer(
-                              absorbing: loading,
-                              child: ThreadCard(thread: threads[index]),
+                child: ValueListenableBuilder<Box>(
+                  valueListenable: Hive.box('settings').listenable(),
+                  builder: (context, box, widget) {
+                    String selectedLayout =
+                        box.get('collection_layout') ?? 'grid';
+                    if (selectedLayout == 'grid') {
+                      return threads.when(
+                          data: (threads) {
+                            if (threads.isEmpty) {
+                              if (mainController.text.isNotEmpty) {
+                                return const Text('No matching threads...');
+                              }
+                              return const Center(
+                                  child: Text('Database empty'));
+                            } else {
+                              return DynamicHeightGridView(
+                                itemCount: threads.length,
+                                crossAxisCount: gridColumnCount,
+                                mainAxisSpacing: 20,
+                                crossAxisSpacing: 20,
+                                builder: (context, index) {
+                                  return AbsorbPointer(
+                                    absorbing: loading,
+                                    child: ThreadCard(thread: threads[index]),
+                                  );
+                                },
+                              );
+                            }
+                          },
+                          error: (e, s) {
+                            debugPrintStack(label: e.toString(), stackTrace: s);
+                            return Column(
+                              children: [
+                                const Text('An error has occured.'),
+                                const Text('Your database might be corrupted.'),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                    onPressed: _tryToRestoreBackup,
+                                    child: const Text(
+                                        'Try to restore from latest backup')),
+                              ],
                             );
                           },
-                        );
-                      }
-                    },
-                    error: (e, s) {
-                      debugPrintStack(label: e.toString(), stackTrace: s);
-                      return Column(
-                        children: [
-                          const Text('An error has occured.'),
-                          const Text('Your database might be corrupted.'),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                              onPressed: _tryToRestoreBackup,
-                              child: const Text(
-                                  'Try to restore from latest backup')),
-                        ],
-                      );
-                    },
-                    loading: () => const Align(
-                          alignment: Alignment.center,
-                          child: CircularProgressIndicator(),
-                        )),
-              )
+                          loading: () => const Align(
+                                alignment: Alignment.center,
+                                child: CircularProgressIndicator(),
+                              ));
+                    } else if (selectedLayout == 'list') {
+                      return const Text('List layout');
+                    } else {
+                      return const Text('Invalid layout selected');
+                    }
+                  },
+                ),
+              ),
             ]),
           ),
         );
       }),
-    );
-  }
-}
-
-class MixedLoadingIndicator extends ConsumerWidget {
-  const MixedLoadingIndicator({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final refreshProgress = ref.watch(refreshProgressProvider);
-    return CircularProgressIndicator(
-      strokeWidth: 3,
-      value: refreshProgress > 0.0 ? refreshProgress : null,
     );
   }
 }

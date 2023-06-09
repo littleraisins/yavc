@@ -8,7 +8,7 @@ import 'package:lehttp_overrides/lehttp_overrides.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import 'presentation/root.dart';
+import 'presentation/navigator.dart';
 
 void main() async {
   // Adding new Let's Encrypt root certificate for old Android devices <7.1.1

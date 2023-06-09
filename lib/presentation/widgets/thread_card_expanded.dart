@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../database/db.dart';
-import '../presentation/actions.dart';
-import 'prefix_colors.dart';
+import '../../database/db.dart';
+import '../actions.dart';
+import '../label_colors.dart';
 
 class ExpandedThreadCard extends ConsumerWidget {
   const ExpandedThreadCard({super.key, required this.thread});
