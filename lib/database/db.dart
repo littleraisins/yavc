@@ -89,6 +89,11 @@ class AppDatabase extends _$AppDatabase {
         .watch();
   }
 
+  MultiSelectable<Thread> newThreads() {
+    return (select(threads)
+      ..where((t) => t.currVersion.isNotExp(t.prevVersion)));
+  }
+
   Future<bool> threadExists(int id) async {
     List<Thread> result =
         await (select(threads)..where((t) => t.id.equals(id))).get();

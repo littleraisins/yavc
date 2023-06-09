@@ -1,10 +1,11 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yavc/presentation/state.dart';
 
 import 'pages/archive.dart';
 import 'pages/home.dart';
 import 'pages/settings.dart';
+import 'state.dart';
 
 class RootNavigator extends ConsumerStatefulWidget {
   const RootNavigator({super.key});
@@ -19,6 +20,8 @@ class _RootNavigatorState extends ConsumerState<RootNavigator> {
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(loadingProvider);
+    final newThreads = ref.watch(newThreadsProvider);
+    final newThreadsAmount = newThreads.value?.length ?? 0;
 
     Widget page;
     switch (selectedIndex) {
@@ -51,16 +54,28 @@ class _RootNavigatorState extends ConsumerState<RootNavigator> {
               Expanded(child: mainArea),
               NavigationBar(
                 elevation: 5,
-                destinations: const [
+                destinations: [
                   NavigationDestination(
-                    icon: Icon(Icons.collections_bookmark),
+                    icon: badges.Badge(
+                      showBadge: newThreadsAmount > 0,
+                      badgeContent: Text(
+                        newThreadsAmount.toString(),
+                        style: const TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      badgeStyle: const badges.BadgeStyle(
+                        badgeColor: Colors.yellow,
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      child: const Icon(Icons.collections_bookmark),
+                    ),
                     label: 'Collection',
                   ),
-                  NavigationDestination(
+                  const NavigationDestination(
                     icon: Icon(Icons.inventory),
                     label: 'Archive',
                   ),
-                  NavigationDestination(
+                  const NavigationDestination(
                     icon: Icon(Icons.settings),
                     label: 'Settings',
                   ),
@@ -80,16 +95,28 @@ class _RootNavigatorState extends ConsumerState<RootNavigator> {
           return Row(
             children: [
               NavigationRail(
-                destinations: const [
+                destinations: [
                   NavigationRailDestination(
-                    icon: Icon(Icons.collections_bookmark),
-                    label: Text('Collection'),
+                    icon: badges.Badge(
+                      showBadge: newThreadsAmount > 0,
+                      badgeContent: Text(
+                        newThreadsAmount.toString(),
+                        style: const TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      badgeStyle: const badges.BadgeStyle(
+                        badgeColor: Colors.yellow,
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      child: const Icon(Icons.collections_bookmark),
+                    ),
+                    label: const Text('Collection'),
                   ),
-                  NavigationRailDestination(
+                  const NavigationRailDestination(
                     icon: Icon(Icons.inventory),
                     label: Text('Archive'),
                   ),
-                  NavigationRailDestination(
+                  const NavigationRailDestination(
                     icon: Icon(Icons.settings),
                     label: Text('Settings'),
                   ),

@@ -8,6 +8,11 @@ final importProgressProvider = StateProvider<double>((ref) => 0.0);
 
 final refreshProgressProvider = StateProvider<double>((ref) => 0.0);
 
+final newThreadsProvider = StreamProvider<List<Thread>>((ref) {
+  final database = ref.watch(AppDatabase.provider);
+  return database.newThreads().watch();
+});
+
 final searchQueryThreads = StateProvider<String>((ref) => '');
 final allThreadsStreamProvider = StreamProvider<List<Thread>>((ref) {
   final database = ref.watch(AppDatabase.provider);

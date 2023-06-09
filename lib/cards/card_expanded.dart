@@ -73,14 +73,9 @@ class VersionCard extends StatelessWidget {
                 children: [
                   if (thread.prevVersion != thread.currVersion) ...[
                     DecoratedBox(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.yellow,
-                        border: Border.all(
-                          width: 2,
-                          color: Colors.black,
-                        ),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
