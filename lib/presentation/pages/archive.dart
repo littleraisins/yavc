@@ -1,9 +1,11 @@
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../state.dart';
 import '../widgets/thread_card.dart';
+import '../widgets/thread_list_tile.dart';
 
 class ArchivePage extends ConsumerStatefulWidget {
   const ArchivePage({Key? key}) : super(key: key);
@@ -69,15 +71,34 @@ class _ArchivePageState extends ConsumerState<ArchivePage> {
                         return const Center(
                             child: Text('No threads in archive'));
                       } else {
-                        return DynamicHeightGridView(
-                          itemCount: threads.length,
-                          crossAxisCount: gridColumnCount,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                          builder: (context, index) {
-                            return ThreadCard(thread: threads[index]);
-                          },
-                        );
+                        return ValueListenableBuilder<Box>(
+                            valueListenable: Hive.box('settings').listenable(),
+                            builder: (context, box, widget) {
+                              String selectedLayout =
+                                  box.get('layout') ?? 'grid';
+                              if (selectedLayout == 'grid') {
+                                return DynamicHeightGridView(
+                                  itemCount: threads.length,
+                                  crossAxisCount: gridColumnCount,
+                                  mainAxisSpacing: 20,
+                                  crossAxisSpacing: 20,
+                                  builder: (context, index) {
+                                    return ThreadCard(thread: threads[index]);
+                                  },
+                                );
+                              } else if (selectedLayout == 'list') {
+                                return ListView.separated(
+                                    itemCount: threads.length,
+                                    itemBuilder: (context, i) {
+                                      return ThreadListTile(thread: threads[i]);
+                                    },
+                                    separatorBuilder: (context, i) {
+                                      return const SizedBox(height: 10);
+                                    });
+                              } else {
+                                return const Text('Invalid layout selected');
+                              }
+                            });
                       }
                     },
                     error: (e, s) {
@@ -88,7 +109,7 @@ class _ArchivePageState extends ConsumerState<ArchivePage> {
                           alignment: Alignment.center,
                           child: CircularProgressIndicator(),
                         )),
-              )
+              ),
             ]),
           ),
         );

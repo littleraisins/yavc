@@ -17,14 +17,13 @@ class _LayoutChooseWidgetState extends ConsumerState<LayoutChooseWidget> {
   @override
   Widget build(BuildContext context) {
     setState(() {
-      var hiveValue = Hive.box('settings').get('collection_layout') ?? 'grid';
+      var hiveValue = Hive.box('settings').get('layout') ?? 'grid';
       layout = hiveValue == 'grid' ? Layouts.grid : Layouts.list;
     });
     return SettingsCard(
       child: Row(
         children: [
-          const Expanded(
-              child: Text('Collection layout', style: TextStyle(fontSize: 20))),
+          const Expanded(child: Text('Layout', style: TextStyle(fontSize: 20))),
           ValueListenableBuilder<Box>(
             valueListenable: Hive.box('settings').listenable(),
             builder: (context, box, widget) {
@@ -45,7 +44,7 @@ class _LayoutChooseWidgetState extends ConsumerState<LayoutChooseWidget> {
                 onSelectionChanged: (Set<Layouts> newSelection) {
                   setState(() {
                     layout = newSelection.first;
-                    box.put('collection_layout', newSelection.first.name);
+                    box.put('layout', newSelection.first.name);
                   });
                 },
               );

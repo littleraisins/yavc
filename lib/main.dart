@@ -11,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import 'presentation/navigator.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Adding new Let's Encrypt root certificate for old Android devices <7.1.1
   if (Platform.isAndroid) {
     HttpOverrides.global = LEHttpOverrides();

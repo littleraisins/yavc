@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../database/db.dart';
-import '../label_colors.dart';
 import 'thread_card_expanded.dart';
+import 'thread_labels_wrap.dart';
 
 class ThreadCard extends StatelessWidget {
   const ThreadCard({super.key, required this.thread});
@@ -81,30 +81,7 @@ class ThreadCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: [
-                          for (var label in thread.labels)
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                  color: getLabelBackgroundColor(label),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(5))),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 1),
-                                child: Text(
-                                  label,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: getLabelForegroundColor(label),
-                                  ),
-                                ),
-                              ),
-                            )
-                        ],
-                      ),
+                      ThreadLabelsWrap(thread: thread),
                       Text(
                         thread.name,
                         overflow: TextOverflow.ellipsis,
