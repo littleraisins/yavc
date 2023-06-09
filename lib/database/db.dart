@@ -19,6 +19,7 @@ class Threads extends Table {
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get lastUpdated => text().withDefault(const Constant(''))();
   BoolColumn get archived => boolean().withDefault(const Constant(false))();
+  IntColumn get lastFullRefresh => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -58,6 +59,7 @@ class AppDatabase extends _$AppDatabase {
                 await m.addColumn(threads, threads.description);
                 await m.addColumn(threads, threads.lastUpdated);
                 await m.addColumn(threads, threads.archived);
+                await m.addColumn(threads, threads.lastFullRefresh);
               });
               break;
           }

@@ -84,6 +84,14 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
             SqlDialect.postgres: '',
           }),
           defaultValue: const Constant(false));
+  static const VerificationMeta _lastFullRefreshMeta =
+      const VerificationMeta('lastFullRefresh');
+  @override
+  late final GeneratedColumn<int> lastFullRefresh = GeneratedColumn<int>(
+      'last_full_refresh', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -96,7 +104,8 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
         tags,
         description,
         lastUpdated,
-        archived
+        archived,
+        lastFullRefresh
       ];
   @override
   String get aliasedName => _alias ?? 'threads';
@@ -162,6 +171,12 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
       context.handle(_archivedMeta,
           archived.isAcceptableOrUnknown(data['archived']!, _archivedMeta));
     }
+    if (data.containsKey('last_full_refresh')) {
+      context.handle(
+          _lastFullRefreshMeta,
+          lastFullRefresh.isAcceptableOrUnknown(
+              data['last_full_refresh']!, _lastFullRefreshMeta));
+    }
     return context;
   }
 
@@ -194,6 +209,8 @@ class $ThreadsTable extends Threads with TableInfo<$ThreadsTable, Thread> {
           .read(DriftSqlType.string, data['${effectivePrefix}last_updated'])!,
       archived: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}archived'])!,
+      lastFullRefresh: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}last_full_refresh'])!,
     );
   }
 
@@ -220,6 +237,7 @@ class Thread extends DataClass implements Insertable<Thread> {
   final String description;
   final String lastUpdated;
   final bool archived;
+  final int lastFullRefresh;
   const Thread(
       {required this.id,
       required this.name,
@@ -231,7 +249,8 @@ class Thread extends DataClass implements Insertable<Thread> {
       required this.tags,
       required this.description,
       required this.lastUpdated,
-      required this.archived});
+      required this.archived,
+      required this.lastFullRefresh});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -252,6 +271,7 @@ class Thread extends DataClass implements Insertable<Thread> {
     map['description'] = Variable<String>(description);
     map['last_updated'] = Variable<String>(lastUpdated);
     map['archived'] = Variable<bool>(archived);
+    map['last_full_refresh'] = Variable<int>(lastFullRefresh);
     return map;
   }
 
@@ -268,6 +288,7 @@ class Thread extends DataClass implements Insertable<Thread> {
       description: Value(description),
       lastUpdated: Value(lastUpdated),
       archived: Value(archived),
+      lastFullRefresh: Value(lastFullRefresh),
     );
   }
 
@@ -286,6 +307,7 @@ class Thread extends DataClass implements Insertable<Thread> {
       description: serializer.fromJson<String>(json['description']),
       lastUpdated: serializer.fromJson<String>(json['lastUpdated']),
       archived: serializer.fromJson<bool>(json['archived']),
+      lastFullRefresh: serializer.fromJson<int>(json['lastFullRefresh']),
     );
   }
   @override
@@ -303,6 +325,7 @@ class Thread extends DataClass implements Insertable<Thread> {
       'description': serializer.toJson<String>(description),
       'lastUpdated': serializer.toJson<String>(lastUpdated),
       'archived': serializer.toJson<bool>(archived),
+      'lastFullRefresh': serializer.toJson<int>(lastFullRefresh),
     };
   }
 
@@ -317,7 +340,8 @@ class Thread extends DataClass implements Insertable<Thread> {
           List<String>? tags,
           String? description,
           String? lastUpdated,
-          bool? archived}) =>
+          bool? archived,
+          int? lastFullRefresh}) =>
       Thread(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -330,6 +354,7 @@ class Thread extends DataClass implements Insertable<Thread> {
         description: description ?? this.description,
         lastUpdated: lastUpdated ?? this.lastUpdated,
         archived: archived ?? this.archived,
+        lastFullRefresh: lastFullRefresh ?? this.lastFullRefresh,
       );
   @override
   String toString() {
@@ -344,7 +369,8 @@ class Thread extends DataClass implements Insertable<Thread> {
           ..write('tags: $tags, ')
           ..write('description: $description, ')
           ..write('lastUpdated: $lastUpdated, ')
-          ..write('archived: $archived')
+          ..write('archived: $archived, ')
+          ..write('lastFullRefresh: $lastFullRefresh')
           ..write(')'))
         .toString();
   }
@@ -361,7 +387,8 @@ class Thread extends DataClass implements Insertable<Thread> {
       tags,
       description,
       lastUpdated,
-      archived);
+      archived,
+      lastFullRefresh);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -376,7 +403,8 @@ class Thread extends DataClass implements Insertable<Thread> {
           other.tags == this.tags &&
           other.description == this.description &&
           other.lastUpdated == this.lastUpdated &&
-          other.archived == this.archived);
+          other.archived == this.archived &&
+          other.lastFullRefresh == this.lastFullRefresh);
 }
 
 class ThreadsCompanion extends UpdateCompanion<Thread> {
@@ -391,6 +419,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
   final Value<String> description;
   final Value<String> lastUpdated;
   final Value<bool> archived;
+  final Value<int> lastFullRefresh;
   const ThreadsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -403,6 +432,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     this.description = const Value.absent(),
     this.lastUpdated = const Value.absent(),
     this.archived = const Value.absent(),
+    this.lastFullRefresh = const Value.absent(),
   });
   ThreadsCompanion.insert({
     this.id = const Value.absent(),
@@ -416,6 +446,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     this.description = const Value.absent(),
     this.lastUpdated = const Value.absent(),
     this.archived = const Value.absent(),
+    this.lastFullRefresh = const Value.absent(),
   })  : name = Value(name),
         labels = Value(labels),
         developer = Value(developer),
@@ -434,6 +465,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     Expression<String>? description,
     Expression<String>? lastUpdated,
     Expression<bool>? archived,
+    Expression<int>? lastFullRefresh,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -447,6 +479,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       if (description != null) 'description': description,
       if (lastUpdated != null) 'last_updated': lastUpdated,
       if (archived != null) 'archived': archived,
+      if (lastFullRefresh != null) 'last_full_refresh': lastFullRefresh,
     });
   }
 
@@ -461,7 +494,8 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       Value<List<String>>? tags,
       Value<String>? description,
       Value<String>? lastUpdated,
-      Value<bool>? archived}) {
+      Value<bool>? archived,
+      Value<int>? lastFullRefresh}) {
     return ThreadsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -474,6 +508,7 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
       description: description ?? this.description,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       archived: archived ?? this.archived,
+      lastFullRefresh: lastFullRefresh ?? this.lastFullRefresh,
     );
   }
 
@@ -515,6 +550,9 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
     if (archived.present) {
       map['archived'] = Variable<bool>(archived.value);
     }
+    if (lastFullRefresh.present) {
+      map['last_full_refresh'] = Variable<int>(lastFullRefresh.value);
+    }
     return map;
   }
 
@@ -531,7 +569,8 @@ class ThreadsCompanion extends UpdateCompanion<Thread> {
           ..write('tags: $tags, ')
           ..write('description: $description, ')
           ..write('lastUpdated: $lastUpdated, ')
-          ..write('archived: $archived')
+          ..write('archived: $archived, ')
+          ..write('lastFullRefresh: $lastFullRefresh')
           ..write(')'))
         .toString();
   }

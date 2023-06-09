@@ -6,6 +6,8 @@ final loadingProvider = StateProvider<bool>((ref) => false);
 
 final importProgressProvider = StateProvider<double>((ref) => 0.0);
 
+final refreshProgressProvider = StateProvider<double>((ref) => 0.0);
+
 final searchQueryThreads = StateProvider<String>((ref) => '');
 final allThreadsStreamProvider = StreamProvider<List<Thread>>((ref) {
   final database = ref.watch(AppDatabase.provider);

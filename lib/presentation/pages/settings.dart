@@ -248,9 +248,10 @@ Future<ImportResult> _import(
       ));
       counter += 1.0;
       ref.read(importProgressProvider.notifier).state = counter / ids.length;
-      await Future.delayed(const Duration(seconds: 1));
     } catch (_) {
       failedToParse.add('https://f95zone.to/threads/$id');
+    } finally {
+      await Future.delayed(const Duration(seconds: 1));
     }
   }
   ref.read(loadingProvider.notifier).state = false;

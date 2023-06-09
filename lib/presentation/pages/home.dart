@@ -170,9 +170,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: loading
                     ? const Padding(
                         padding: EdgeInsets.all(20.0),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                        ),
+                        child: MixedLoadingIndicator(),
                       )
                     : const Icon(Icons.refresh),
               ),
@@ -224,8 +222,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ? const SizedBox(
                                 width: 15,
                                 height: 15,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 3))
+                                child: MixedLoadingIndicator())
                             : const Icon(Icons.add),
                       ),
                     ),
@@ -279,6 +276,21 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         );
       }),
+    );
+  }
+}
+
+class MixedLoadingIndicator extends ConsumerWidget {
+  const MixedLoadingIndicator({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final refreshProgress = ref.watch(refreshProgressProvider);
+    return CircularProgressIndicator(
+      strokeWidth: 3,
+      value: refreshProgress > 0.0 ? refreshProgress : null,
     );
   }
 }

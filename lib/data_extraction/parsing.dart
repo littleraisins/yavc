@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
+import 'package:yavc/presentation/state.dart';
 
 import '../database/db.dart';
 import 'constants.dart';
@@ -45,7 +47,7 @@ String? getThreadAttr(List<String> names, String plain) {
   return null;
 }
 
-Future<ParsingResult> parseThread(int threadId) async {
+Future<ParsingResult> parseThread(int threadId, {bool noBanner = false}) async {
   Uri url = Uri.parse('https://f95zone.to/threads/$threadId');
 
   Response response = await get(url);
@@ -176,28 +178,43 @@ Future<ParsingResult> parseThread(int threadId) async {
     }
   }
 
-  // Downloading banner
+  Uint8List banner = Uint8List(0);
 
-  List<Element> bannerEl = threadStarter[0].getElementsByClassName('bbImage');
+  if (!noBanner) {
+    // Downloading banner
 
-  if (bannerEl.isEmpty) {
-    throw ('Failed to locate banner image');
+    List<Element> bannerEl = threadStarter[0].getElementsByClassName('bbImage');
+
+    if (bannerEl.isEmpty) {
+      throw ('Failed to locate banner image');
+    }
+
+    String? bannerUrl = bannerEl[0].attributes['src'];
+
+    if (bannerUrl == null) {
+      throw ('Malformed banner attributes');
+    } else {
+      String fullSizeUrl = bannerUrl.replaceAll('thumb/', '');
+      Response bannerResponse = await get(Uri.parse(fullSizeUrl));
+      banner = bannerResponse.bodyBytes;
+    }
   }
 
-  String? bannerUrl = bannerEl[0].attributes['src'];
+  return ParsingResult(
+    title,
+    labels,
+    developer,
+    version,
+    banner,
+    tags,
+    description,
+    lastUpdated,
+  );
+}
 
-  Uint8List banner;
-
-  if (bannerUrl == null) {
-    throw ('Malformed banner attributes');
-  } else {
-    String fullSizeUrl = bannerUrl.replaceAll('thumb/', '');
-    Response bannerResponse = await get(Uri.parse(fullSizeUrl));
-    banner = bannerResponse.bodyBytes;
-  }
-
-  return ParsingResult(title, labels, developer, version, banner, tags,
-      description, lastUpdated);
+Future<ParsingResult> parseThreadNoBanner(int threadId) async {
+  var result = await parseThread(threadId, noBanner: true);
+  return result;
 }
 
 class UpdateResult {
@@ -233,18 +250,52 @@ Future<UpdateResult> refresh(WidgetRef ref) async {
     }
   }
 
-  List<Thread> threadsNew = [];
+  List<Thread> newThreads = [];
+
+  int counter = 0;
+  int refreshQueue = threads.length;
+  DateTime timeNow = DateTime.now();
 
   for (var thread in threads) {
+    int daysSinceLastFullRefresh = timeNow
+        .difference(DateTime.fromMillisecondsSinceEpoch(thread.lastFullRefresh))
+        .inDays;
     String? version = json['msg'][thread.id.toString()];
+
     if (version == null) {
       failed.add('${thread.name} (${thread.id})');
+      counter++;
+      ref.read(refreshProgressProvider.notifier).state = counter / refreshQueue;
       continue;
     }
-    threadsNew.add(thread.copyWith(currVersion: version));
+
+    if (daysSinceLastFullRefresh >= 7 || thread.prevVersion != version) {
+      try {
+        var result = await compute(parseThreadNoBanner, thread.id);
+        newThreads.add(thread.copyWith(
+            name: result.name,
+            labels: result.labels,
+            developer: result.developer,
+            currVersion: version,
+            tags: result.tags,
+            description: result.description,
+            lastUpdated: result.lastUpdated,
+            lastFullRefresh: timeNow.millisecondsSinceEpoch));
+      } catch (e) {
+        failed.add('${thread.name} (${thread.id}) (full recheck)');
+      } finally {
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    } else {
+      newThreads.add(thread.copyWith(currVersion: version));
+    }
+    counter++;
+    ref.read(refreshProgressProvider.notifier).state = counter / refreshQueue;
   }
 
-  await database.updateThreads(threadsNew);
+  await database.updateThreads(newThreads);
+
+  ref.read(refreshProgressProvider.notifier).state = 0.0;
 
   return UpdateResult(failed);
 }
