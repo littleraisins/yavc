@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
+import 'package:lehttp_overrides/lehttp_overrides.dart';
 import 'package:yavc/presentation/state.dart';
 
 import '../database/db.dart';
@@ -48,6 +50,11 @@ String? getThreadAttr(List<String> names, String plain) {
 }
 
 Future<ParsingResult> parseThread(int threadId, {bool noBanner = false}) async {
+  // This function runs in isolate, so we need to override Let's Encrypt certs again
+  if (Platform.isAndroid) {
+    HttpOverrides.global = LEHttpOverrides();
+  }
+
   Uri url = Uri.parse('https://f95zone.to/threads/$threadId');
 
   Response response = await get(url);
