@@ -26,15 +26,37 @@ jobs:
         run: flutter build linux --release
       - name: 'Android build'
         run: flutter build apk
-      - name: 'Create artifacts'
+      - name: 'Removing debug APK and checksums'
+        run: |
+          rm -rf ./build/app/outputs/flutter-apk/app-debug.apk
+          rm -rf ./build/app/outputs/flutter-apk/*.sha1
+      - name: 'Signing APK file'
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: ./build/app/outputs/flutter-apk
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+      - name: 'Creating artifacts'
         run: |
           7z a YAVC-Linux.zip ./build/linux/x64/release/bundle/*
-          cp ./build/app/outputs/flutter-apk/app-release.apk ./YAVC-Android.apk
-      - name: 'Upload release artifacts'
+          cp ${{steps.sign_app.outputs.signedReleaseFile}} ./YAVC-Android.apk
+      - name: 'Generating changelog'
+        uses: ardalanamini/auto-changelog@v4
+        id: changelog
+        with:
+          github-token: ${{ github.token }}
+          semver: false
+          include-compare: false
+          mention-authors: false
+          mention-new-contributors: false
+      - name: 'Uploading release artifacts'
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: "${{ secrets.CUSTOM_GITHUB_TOKEN }}"
         with:
+          body: "${{ steps.changelog.outputs.changelog }}"
           files: |
             ./YAVC-Linux.zip
             ./YAVC-Android.apk
