@@ -14,9 +14,9 @@
 - Android: Download and install APK file. *
 - MacOS: Extract archive and move `YAVC.app` to `Applications`. **
 
-\* APK file is not signed, so recent version of Android might warn you about unknown developer, there is usually a way to force install application anyway, just look for it in the warning box.
+\* Play Protect might warn you about unknown developer.
 
-\** MacOS app is not signed , on first launch you will need to manually allow it by going to `System settings > Privacy & Security` and clicking `Open` button. 
+\** If app was blocked on first launch , go to `System settings > Privacy & Security` and click `Open`. 
 
 ## Data storage
 
