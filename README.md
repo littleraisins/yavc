@@ -24,3 +24,8 @@
 - Linux: `/home/<username>/.local/share/YAVC/yavc.db`
 - Android: `/data/user/0/com.littleraisins.yavc/files/yavc.db`
 - MacOS: `/Users/<username>/Library/Containers/com.littleraisins.yavc/Data/Library/Application Support/com.littleraisins.yavc/yavc.db`
+
+**IMPORTANT:**
+
+- To avoid data corruption do **NOT** move database files manually, use in-app import and export functionality.
+- Deleting the Android app will delete your data. To update just install a new APK file. If update fails for some reason, backup your database before deleting the app.
